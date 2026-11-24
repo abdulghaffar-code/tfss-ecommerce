@@ -1,0 +1,41 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+npm-debug.log*
+npm-install.log
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# local env files
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# local database cluster + logs
+/.pgdata/
+/.preview/
+
+# uploaded media (seed assets live in /public)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# testing
+/coverage
+
+# local process logs
+/.dev.log
+/.dev.pid
+/.build.log
+/.prod.log
