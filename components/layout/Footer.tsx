@@ -37,11 +37,11 @@ export function Footer({
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
           <div>
             <Image
-              src={settings.logoUrl || "/brand/logo-emblem-mono.png"}
+              src={settings.logoUrl || "/brand/logo.png"}
               alt={settings.companyName}
-              width={320}
-              height={119}
-              className="h-14 w-auto object-contain object-left"
+              width={512}
+              height={512}
+              className="h-16 w-auto object-contain object-left"
             />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-steel-400">
               Industrial safety and personal protective equipment for Karachi&apos;s

@@ -675,7 +675,7 @@ export async function saveSettingsAction(formData: FormData) {
       data.safelinkAddress ||
       "Shop # 5-A, 1st Floor, Adnan Center, Nicol Road, Karachi",
     mapEmbedUrl: data.mapEmbedUrl ?? null,
-    logoUrl: uploadedLogo || data.logoUrl || "/brand/logo-emblem-mono.png",
+    logoUrl: uploadedLogo || data.logoUrl || "/brand/logo.png",
     ownerImageUrl: uploadedOwner ?? data.ownerImageUrl ?? null,
     announcement: data.announcement ?? null,
   };

@@ -347,7 +347,7 @@ model CompanySettings {
   address        String   @default("Shop # 1-B, Adnan Center, Ground Floor, Nicol Road, Karachi, Pakistan")
   safelinkAddress String  @default("Shop # 5-A, 1st Floor, Adnan Center, Nicol Road, Karachi")
   mapEmbedUrl    String?
-  logoUrl        String   @default("/brand/logo-emblem.png")
+  logoUrl        String   @default("/brand/logo.png")
   ownerImageUrl  String?
   announcement   String?
   updatedAt      DateTime @updatedAt

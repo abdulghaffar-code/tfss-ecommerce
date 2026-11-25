@@ -25,10 +25,10 @@ export default async function AdminLayout({
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-white/10 bg-ink-900 px-3 py-5 lg:flex">
           <Link href="/admin" className="px-3">
             <Image
-              src="/brand/logo-emblem-mono.png"
+              src="/brand/logo.png"
               alt="Total Fire & Safety Solution"
-              width={280}
-              height={104}
+              width={512}
+              height={512}
               className="h-10 w-auto object-contain"
             />
           </Link>
@@ -67,11 +67,11 @@ export default async function AdminLayout({
           <header className="sticky top-0 z-30 border-b border-white/10 bg-ink-950/90 backdrop-blur lg:hidden">
             <div className="flex items-center justify-between px-4 py-3">
               <Image
-                src="/brand/logo-emblem-mono.png"
+                src="/brand/logo.png"
                 alt="Total Fire & Safety Solution"
-                width={240}
-                height={89}
-                className="h-8 w-auto object-contain"
+                width={512}
+                height={512}
+                className="h-9 w-auto object-contain"
               />
               <div className="flex items-center gap-3">
                 <Link href="/" className="text-[10px] uppercase tracking-[0.12em] text-steel-400">

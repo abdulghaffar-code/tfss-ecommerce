@@ -8,11 +8,11 @@ export default function NotFound() {
       <div className="w-full max-w-lg text-center">
         <Link href="/" className="inline-block">
           <Image
-            src="/brand/logo-emblem-mono.png"
+            src="/brand/logo.png"
             alt="Total Fire & Safety Solution"
-            width={280}
-            height={104}
-            className="mx-auto h-12 w-auto object-contain"
+            width={512}
+            height={512}
+            className="mx-auto h-16 w-auto object-contain"
           />
         </Link>
         <p

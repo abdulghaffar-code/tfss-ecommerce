@@ -38,7 +38,7 @@ export function Header({
   wishlistCount,
   announcement,
   phone,
-  logoUrl = "/brand/logo-emblem-mono.png",
+  logoUrl = "/brand/logo.png",
 }: {
   categories: HeaderCategory[];
   user: HeaderUser;
@@ -123,12 +123,12 @@ export function Header({
         <div className="shell flex h-[70px] items-center gap-4 lg:h-[78px]">
           <Link href="/" aria-label="Total Fire & Safety Solution — home" className="shrink-0">
             <Image
-              src={logoUrl || "/brand/logo-emblem-mono.png"}
+              src={logoUrl || "/brand/logo.png"}
               alt="Total Fire & Safety Solution"
-              width={300}
-              height={111}
+              width={512}
+              height={512}
               priority
-              className="h-11 w-auto object-contain sm:h-12"
+              className="h-12 w-auto object-contain sm:h-14"
             />
           </Link>
 
@@ -332,11 +332,11 @@ export function Header({
             >
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                 <Image
-                  src={logoUrl || "/brand/logo-emblem-mono.png"}
+                  src={logoUrl || "/brand/logo.png"}
                   alt="Total Fire & Safety Solution"
-                  width={270}
-                  height={100}
-                  className="h-10 w-auto object-contain"
+                  width={512}
+                  height={512}
+                  className="h-11 w-auto object-contain"
                 />
                 <button
                   type="button"

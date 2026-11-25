@@ -27,7 +27,7 @@ const fallback: Settings = {
   safelinkAddress: "Shop # 5-A, 1st Floor, Adnan Center, Nicol Road, Karachi",
   mapEmbedUrl:
     "https://www.google.com/maps/embed?pb=!1m10!1m8!1m3!1d7240.704507217973!2d67.00064!3d24.851816!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1795502756818!5m2!1sen!2sus",
-  logoUrl: "/brand/logo-emblem-mono.png",
+  logoUrl: "/brand/logo.png",
   ownerImageUrl: "/company/owner.jpg",
   announcement: null,
 };
