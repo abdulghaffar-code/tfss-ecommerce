@@ -5,6 +5,11 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Box, Move3d, Scan } from "lucide-react";
 
+export type ShowcaseImage = {
+  src: string;
+  category: string;
+};
+
 const HeroScene = dynamic(() => import("@/components/three/HeroScene"), {
   ssr: false,
   loading: () => <SceneSkeleton />,
@@ -40,32 +45,35 @@ function SceneSkeleton() {
   );
 }
 
-function Fallback() {
+function Fallback({ image }: { image: ShowcaseImage | null }) {
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-radial-flame opacity-70" aria-hidden />
-      <div className="relative w-[62%] max-w-[300px] overflow-hidden rounded-2xl border border-white/10 bg-steel-100 shadow-lift">
-        <Image
-          src="/products/guardian-hc1-helmet-white/1.webp"
-          alt="Guardian HC1 industrial safety helmet"
-          width={640}
-          height={640}
-          className="h-auto w-full object-cover"
-          sizes="(max-width: 768px) 60vw, 300px"
-        />
-      </div>
+      {image ? (
+        <div className="relative w-[62%] max-w-[320px] overflow-hidden rounded-2xl border border-white/10 bg-ink-950 shadow-lift">
+          <Image
+            src={image.src}
+            alt={`${image.category} 3D product render`}
+            width={900}
+            height={900}
+            className="h-auto w-full object-cover"
+            sizes="(max-width: 768px) 60vw, 320px"
+          />
+        </div>
+      ) : null}
       <p className="relative mt-5 flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-steel-400">
-        <Scan className="size-3.5" /> Product photography — 3D view unavailable
+        <Scan className="size-3.5" /> {image ? image.category : "Product render"} — 3D view unavailable
         on this device
       </p>
     </div>
   );
 }
 
-export function HeroVisual() {
+export function HeroVisual({ images }: { images: ShowcaseImage[] }) {
   const [supported, setSupported] = useState<boolean | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [lowPower, setLowPower] = useState(false);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     try {
@@ -84,18 +92,45 @@ export function HeroVisual() {
     return () => motion.removeEventListener("change", onChange);
   }, []);
 
-  if (supported === false) return <Fallback />;
+  // Advance the showcase every five seconds.
+  useEffect(() => {
+    if (images.length < 2) return;
+    const timer = window.setInterval(() => {
+      setIndex((current) => (current + 1) % images.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [images.length]);
+
+  // Warm the browser cache for the next render so the 3D swap is instant.
+  useEffect(() => {
+    if (images.length < 2) return;
+    const next = images[(index + 1) % images.length];
+    const preload = new window.Image();
+    preload.src = next.src;
+  }, [index, images]);
+
+  const active = images[index] ?? null;
+
+  if (supported === false) return <Fallback image={active} />;
   if (supported === null) return <SceneSkeleton />;
 
   return (
-    <SceneBoundary fallback={<Fallback />}>
+    <SceneBoundary fallback={<Fallback image={active} />}>
       <div className="relative h-full w-full">
-        <HeroScene reducedMotion={reducedMotion} lowPower={lowPower} />
+        <HeroScene
+          imageSrc={active?.src ?? null}
+          reducedMotion={reducedMotion}
+          lowPower={lowPower}
+        />
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex items-center justify-between px-1 text-[9px] uppercase tracking-[0.2em] text-steel-500">
           <span className="flex items-center gap-1.5">
-            <Move3d className="size-3" /> Interactive 3D
+            <Move3d className="size-3" /> {active ? active.category : "Interactive 3D"}
           </span>
-          <span>{lowPower ? "Touch · scroll" : "Move cursor · scroll"}</span>
+          <span>
+            {images.length
+              ? `${String(index + 1).padStart(2, "0")} / ${String(images.length).padStart(2, "0")}`
+              : "5s rotation"}
+          </span>
         </div>
       </div>
     </SceneBoundary>

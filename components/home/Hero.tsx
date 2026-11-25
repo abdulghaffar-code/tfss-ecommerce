@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
 import { HeroVisual } from "@/components/three/HeroVisual";
+import showcaseImages from "@/lib/showcase.json";
 
 export function Hero() {
   return (
@@ -85,7 +86,7 @@ export function Hero() {
           >
             TFSS
           </span>
-          <HeroVisual />
+          <HeroVisual images={showcaseImages} />
 
           <div className="absolute left-0 top-4 hidden items-center gap-2 rounded-lg border border-white/10 bg-ink-950/70 px-3 py-2.5 backdrop-blur-md sm:flex">
             <ShieldCheck className="size-4 text-flame-500" />
