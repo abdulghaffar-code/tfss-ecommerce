@@ -2,128 +2,165 @@
 
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Float, RoundedBox } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  Float,
+  Lightformer,
+  RoundedBox,
+} from "@react-three/drei";
 import * as THREE from "three";
+
+// Shell profile (radius, height) ordered bottom to top.
+const SHELL_PROFILE: [number, number][] = [
+  [1.0, 0.62],
+  [1.02, 0.66],
+  [1.0, 0.76],
+  [0.96, 0.94],
+  [0.89, 1.16],
+  [0.78, 1.38],
+  [0.63, 1.58],
+  [0.44, 1.74],
+  [0.22, 1.845],
+  [0, 1.88],
+];
 
 function Helmet() {
   const shell = useMemo(
-    () => new THREE.MeshStandardMaterial({
-      color: "#FFB020",
-      metalness: 0.4,
-      roughness: 0.28,
-    }),
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: "#F3F4EF",
+        roughness: 0.14,
+        metalness: 0.02,
+        clearcoat: 1,
+        clearcoatRoughness: 0.08,
+        envMapIntensity: 1.15,
+      }),
     []
   );
-  const dark = useMemo(
-    () => new THREE.MeshStandardMaterial({
-      color: "#15191C",
-      metalness: 0.75,
-      roughness: 0.32,
-    }),
+  const trim = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#24282C",
+        metalness: 0.35,
+        roughness: 0.45,
+      }),
     []
   );
-  const accent = useMemo(
-    () => new THREE.MeshStandardMaterial({
-      color: "#FF5A1F",
-      emissive: "#8a2506",
-      emissiveIntensity: 0.35,
-      metalness: 0.4,
-      roughness: 0.3,
-    }),
+  const inner = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#14171A",
+        metalness: 0.05,
+        roughness: 0.85,
+        side: THREE.DoubleSide,
+      }),
     []
   );
 
+  const shellGeometry = useMemo(
+    () =>
+      new THREE.LatheGeometry(
+        SHELL_PROFILE.map(([radius, height]) => new THREE.Vector2(radius, height)),
+        128
+      ),
+    []
+  );
+
+  // Broad brim with an extended front peak.
+  const brimGeometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    const hole = new THREE.Path();
+    const segments = 180;
+
+    for (let i = 0; i <= segments; i++) {
+      const angle = (i / segments) * Math.PI * 2;
+      const peak = Math.pow(Math.max(0, -Math.sin(angle)), 2);
+      const radius = 1.13 + 0.3 * peak;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      if (i === 0) shape.moveTo(x, y);
+      else shape.lineTo(x, y);
+    }
+
+    for (let i = segments; i >= 0; i--) {
+      const angle = (i / segments) * Math.PI * 2;
+      const peak = Math.pow(Math.max(0, -Math.sin(angle)), 2);
+      const radius = 0.92 + 0.12 * peak;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      if (i === segments) hole.moveTo(x, y);
+      else hole.lineTo(x, y);
+    }
+
+    shape.holes.push(hole);
+
+    return new THREE.ExtrudeGeometry(shape, {
+      depth: 0.038,
+      bevelEnabled: true,
+      bevelThickness: 0.014,
+      bevelSize: 0.014,
+      bevelSegments: 4,
+      curveSegments: 96,
+    });
+  }, []);
+
   return (
-    <group position={[0, -0.05, 0]} rotation={[0, -0.55, 0]}>
-      {/* dome */}
+    <group position={[0, -1.2, 0]} rotation={[0, -0.3, 0]}>
       <mesh
+        geometry={shellGeometry}
+        material={shell}
         castShadow
         receiveShadow
-        position={[0, 0.62, 0]}
-        scale={[1.06, 0.82, 1.14]}
+      />
+
+      <mesh
+        geometry={brimGeometry}
         material={shell}
-      >
-        <sphereGeometry args={[1, 64, 36, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        position={[0, 0.6, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        castShadow
+        receiveShadow
+      />
+
+      {/* Dark underside so the shell never looks hollow from below. */}
+      <mesh position={[0, 0.585, 0]} rotation={[-Math.PI / 2, 0, 0]} material={inner}>
+        <circleGeometry args={[1.13, 64]} />
       </mesh>
 
-      {/* brim */}
-      <mesh castShadow position={[0, 0.6, 0.04]} scale={[1.2, 1, 1.28]} material={shell}>
-        <cylinderGeometry args={[1.0, 1.02, 0.075, 64]} />
-      </mesh>
-      <mesh position={[0, 0.558, 0.04]} scale={[1.2, 1, 1.28]} material={dark}>
-        <cylinderGeometry args={[1.0, 1.0, 0.025, 64]} />
-      </mesh>
-
-      {/* crown ridges */}
-      <RoundedBox args={[0.15, 0.07, 1.5]} radius={0.03} position={[0, 1.41, 0]} material={shell} castShadow />
-      <RoundedBox args={[0.13, 0.06, 1.24]} radius={0.03} position={[0.32, 1.33, 0]} rotation={[0, 0, -0.12]} material={shell} castShadow />
-      <RoundedBox args={[0.13, 0.06, 1.24]} radius={0.03} position={[-0.32, 1.33, 0]} rotation={[0, 0, 0.12]} material={shell} castShadow />
-
-      {/* side vents */}
-      {[-1, 1].map((side) => (
-        <group key={side} position={[side * 0.86, 0.74, -0.18]}>
-          <mesh rotation={[0, 0, side * 0.35]} material={dark}>
-            <boxGeometry args={[0.16, 0.04, 0.42]} />
-          </mesh>
-          <mesh
-            position={[0, 0.11, 0]}
-            rotation={[0, 0, side * 0.35]}
-            material={accent}
+      {/* Side accessory slots */}
+      {[-1, 1].map((side) => {
+        const x = side * 0.8;
+        const z = 0.55;
+        return (
+          <group
+            key={side}
+            position={[x, 0.78, z]}
+            rotation={[0, Math.atan2(x, z), 0]}
           >
-            <boxGeometry args={[0.1, 0.03, 0.34]} />
-          </mesh>
-        </group>
-      ))}
+            <RoundedBox
+              args={[0.26, 0.1, 0.16]}
+              radius={0.02}
+              material={shell}
+              castShadow
+            />
+            <mesh position={[0, 0.005, 0]} material={trim}>
+              <boxGeometry args={[0.14, 0.14, 0.06]} />
+            </mesh>
+          </group>
+        );
+      })}
 
-      {/* front visor shadow line */}
-      <mesh position={[0, 0.66, 1.045]} rotation={[0.06, 0, 0]} material={dark}>
-        <boxGeometry args={[0.92, 0.055, 0.04]} />
-      </mesh>
+      {/* Rear ratchet adjustment */}
+      <group position={[0, 0.74, -0.98]} rotation={[Math.PI / 2, 0, 0]}>
+        <mesh material={shell} castShadow>
+          <cylinderGeometry args={[0.16, 0.2, 0.12, 32]} />
+        </mesh>
+        <mesh position={[0, 0.07, 0]} material={trim}>
+          <cylinderGeometry args={[0.11, 0.11, 0.05, 24]} />
+        </mesh>
+      </group>
 
-      {/* rear ratchet */}
-      <mesh position={[0, 0.63, -1.05]} rotation={[Math.PI / 2, 0, 0]} material={dark}>
-        <cylinderGeometry args={[0.18, 0.18, 0.13, 24]} />
-      </mesh>
-      <mesh position={[0, 0.63, -1.12]} rotation={[Math.PI / 2, 0, 0]} material={accent}>
-        <cylinderGeometry args={[0.07, 0.07, 0.05, 16]} />
-      </mesh>
-
-      {/* chin strap */}
-      <mesh position={[0, 0.12, 0.22]} rotation={[Math.PI / 2.15, 0, 0]} material={dark}>
-        <torusGeometry args={[0.64, 0.022, 8, 48, Math.PI]} />
-      </mesh>
-
-      {/* light bar */}
-      <mesh position={[0, 0.95, 1.03]} material={accent}>
-        <boxGeometry args={[0.36, 0.045, 0.04]} />
-      </mesh>
-    </group>
-  );
-}
-
-function OrbitRings() {
-  const group = useRef<THREE.Group>(null);
-  useFrame((state, delta) => {
-    if (!group.current) return;
-    group.current.rotation.z += delta * 0.08;
-    group.current.rotation.x =
-      0.42 + Math.sin(state.clock.elapsedTime * 0.22) * 0.06;
-  });
-
-  return (
-    <group ref={group} position={[0, 0.45, 0]}>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[2.35, 0.006, 8, 160]} />
-        <meshBasicMaterial color="#FF7A45" transparent opacity={0.4} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2.3, 0.4, 0.2]}>
-        <torusGeometry args={[2.8, 0.004, 8, 160]} />
-        <meshBasicMaterial color="#9AA3AB" transparent opacity={0.22} />
-      </mesh>
-      <mesh rotation={[Math.PI / 1.8, -0.3, 0]}>
-        <torusGeometry args={[3.15, 0.003, 8, 140]} />
-        <meshBasicMaterial color="#FFB020" transparent opacity={0.12} />
-      </mesh>
     </group>
   );
 }
@@ -191,42 +228,65 @@ function SceneContent({ reducedMotion, lowPower }: { reducedMotion: boolean; low
 
   return (
     <>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.55} />
       <directionalLight
         position={[4.5, 7, 5]}
-        intensity={2.4}
+        intensity={2.2}
         castShadow={!lowPower}
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0001}
       />
-      <directionalLight position={[-5, 3, -4]} intensity={1.1} color="#8fb7d6" />
-      <pointLight position={[-4, 1.5, -2]} intensity={22} color="#FF5A1F" distance={9} />
-      <pointLight position={[3, 2.5, 3]} intensity={10} color="#FFD9A8" distance={8} />
+      <directionalLight position={[-5, 3, -4]} intensity={0.9} color="#a9c6e4" />
+      <pointLight position={[-4, 1.5, -2]} intensity={9} color="#FF5A1F" distance={9} />
+      <pointLight position={[3, 2.5, 3]} intensity={8} color="#FFE8CE" distance={8} />
+
+      {/* Local studio environment — crisp reflections without a CDN fetch. */}
+      <Environment resolution={256}>
+        <Lightformer
+          form="rect"
+          intensity={4}
+          position={[0, 5, -8]}
+          scale={[14, 8, 1]}
+          color="#ffffff"
+        />
+        <Lightformer
+          form="rect"
+          intensity={3}
+          position={[-6, 3, 2]}
+          rotation-y={Math.PI / 2}
+          scale={[8, 8, 1]}
+          color="#cfe0ff"
+        />
+        <Lightformer
+          form="rect"
+          intensity={2.5}
+          position={[6, 2, 1]}
+          rotation-y={-Math.PI / 2}
+          scale={[8, 8, 1]}
+          color="#ffd7b0"
+        />
+        <Lightformer
+          form="circle"
+          intensity={5}
+          position={[0, 7, 2]}
+          scale={[5, 5, 1]}
+          color="#fff6e8"
+        />
+      </Environment>
 
       <group ref={rig}>
         <Float speed={reducedMotion ? 0 : 1.05} rotationIntensity={0.08} floatIntensity={0.22}>
           <Helmet />
         </Float>
-        {!lowPower ? <OrbitRings /> : null}
         {!lowPower ? <Particles count={70} /> : <Particles count={26} />}
       </group>
 
-      {/* pedestal */}
-      <mesh position={[0, -1.1, 0]} receiveShadow>
-        <cylinderGeometry args={[1.95, 2.05, 0.1, 64]} />
-        <meshStandardMaterial color="#15181B" metalness={0.8} roughness={0.35} />
-      </mesh>
-      <mesh position={[0, -1.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[1.7, 1.72, 96]} />
-        <meshBasicMaterial color="#FF5A1F" transparent opacity={0.55} side={THREE.DoubleSide} />
-      </mesh>
-
       <ContactShadows
-        position={[0, -1.04, 0]}
-        opacity={0.55}
-        scale={8}
-        blur={2.4}
-        far={4}
+        position={[0, -1.5, 0]}
+        opacity={0.35}
+        scale={7}
+        blur={3}
+        far={3}
         color="#000000"
         frames={lowPower ? 1 : Infinity}
       />
@@ -245,7 +305,7 @@ export default function HeroScene({
     <Canvas
       shadows={!lowPower}
       dpr={lowPower ? [1, 1.3] : [1, 1.8]}
-      camera={{ position: [0, 1.15, 6.1], fov: 38 }}
+      camera={{ position: [0, 0.35, 4.9], fov: 34 }}
       gl={{
         antialias: true,
         alpha: true,

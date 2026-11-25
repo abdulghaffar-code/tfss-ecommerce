@@ -46,7 +46,7 @@ function Fallback() {
       <div className="absolute inset-0 bg-radial-flame opacity-70" aria-hidden />
       <div className="relative w-[62%] max-w-[300px] overflow-hidden rounded-2xl border border-white/10 bg-steel-100 shadow-lift">
         <Image
-          src="/products/guardian-hc1-helmet-yellow/1.webp"
+          src="/products/guardian-hc1-helmet-white/1.webp"
           alt="Guardian HC1 industrial safety helmet"
           width={640}
           height={640}
